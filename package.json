@@ -1,0 +1,38 @@
+{
+  "name": "grunt-hogan",
+  "description": "a grunt task to compile/precompile hogan templates",
+  "version": "0.1.0",
+  "homepage": "https://github.com/snichme/grunt-hogan",
+  "author": {
+    "name": "Magnus Andersson",
+    "email": "mange@mange.name",
+    "url": "http://blog.mange.name"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/snichme/grunt-hogan.git"
+  },
+  "bugs": {
+    "url": "https://github.com/snichme/grunt-hogan/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/snichme/grunt-hogan/blob/master/LICENSE-MIT"
+    }
+  ],
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "hogan.js-template": "~2.0.0",
+    "when": "~2.7.1"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.0"
+  },
+  "keywords": [
+    "gruntplugin",
+    "hogan"
+  ]
+}
