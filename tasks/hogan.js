@@ -73,7 +73,9 @@ module.exports = function(grunt) {
       return compileFile(file, options);
     });
     when.all(compiled).then(function() {
-      done("Ok");
+      done();
+    }, function() {
+      done();
     });
   });
 };
