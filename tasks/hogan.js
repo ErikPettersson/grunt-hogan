@@ -6,76 +6,57 @@
  * Licensed under the MIT license.
  */
 
-var fs = require('fs'),
-  when = require("when"),
+var fs = require('fs')
   Hogan = require("hogan.js-template/lib/hogan"),
   nodepath = require('path');
 
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
   'use strict';
 
-  function compile(filename, cb) {
+  function compile(filename) {
 
-    var d = when.defer();
-    fs.readFile(filename, function(err, data) {
-      if (err) {
-        d.reject(err);
-      }
-      var html = data.toString(),
-        rows = html.split("\n");
-      rows = rows.map(function(row) {
-        return row.replace(/<!--(.*?)-->/g, '').trim();
-      });
-      var r = "define(function() { return " + Hogan.compile(rows.join(''), {asString: true}) + "; });";
-      d.resolve(r);
+    var data = fs.readFileSync(filename);
+    var html = data.toString(),
+      rows = html.split("\n");
+    rows = rows.map(function (row) {
+      return row.replace(/<!--(.*?)-->/g, '').trim();
     });
-    return d.promise;
-  };
+    return "define(function() { return " + Hogan.compile(rows.join(''), {asString: true}) + "; });";
+  }
 
   function compileFile(filename, options) {
     var path = nodepath.dirname(filename),
-      html_filepath = filename,
+      //html_filepath = filename,
       html_filename = nodepath.basename(filename),
       js_filename = options.nameFunc(html_filename),
       js_filepath = path + '/' + js_filename,
-      modTime = function(path) {
+      modTime = function (path) {
         return fs.statSync(path).mtime;
       };
-    if (!fs.existsSync(js_filepath) || modTime(html_filepath) >= modTime(js_filepath)) {
-      return when(compile(html_filepath)).then(function(data) {
-        fs.writeFile(js_filepath, data, function(err) {
-          if (err) {
-            grunt.log.error(err);
-          }
-          grunt.log.ok("Compiled " + js_filename);
-        });
-      });
-    } else {
-      return when.reject("File dont need compiling.");
+    if (!fs.existsSync(js_filepath) || modTime(filename) >= modTime(js_filepath)) {
+      var data = compile(filename);
+      fs.writeFileSync(js_filepath, data);
+      fs.unlinkSync(filename);
+      grunt.log.ok("Compiled " + js_filename);
+      return js_filename;
     }
-  };
+  }
 
-  grunt.registerMultiTask('hogan', 'Compile a hogan template.', function() {
+  grunt.registerMultiTask('hogan', 'Compile a hogan template.', function () {
 
-    var done = this.async(),
-    target = this.target,
-      options = this.data,
-      output = null,
+    var options = this.data,
       templates = options.templates || options.template,
       templateFilePaths = grunt.file.expand(templates);
 
-    options.nameFunc = options.nameFunc || function(fileName) {
+    options.nameFunc = options.nameFunc || function (fileName) {
       return nodepath.basename(fileName, nodepath.extname(fileName)) + ".js";
     };
 
-    var compiled = templateFilePaths.map(function(file) {
+    var compiled = templateFilePaths.map(function (file) {
       return compileFile(file, options);
     });
-    when.all(compiled).then(function() {
-      done();
-    }, function() {
-      done();
-    });
+
+    grunt.log.ok("Compiled " + compiled.length + " templates");
   });
 };
